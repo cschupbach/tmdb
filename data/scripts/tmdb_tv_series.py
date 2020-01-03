@@ -1,6 +1,7 @@
 import tmdb_scraper as tmdb
 import pandas as pd
 import numpy as np
+from datetime import datetime as dt
 
 
 def _url(api_key, page, min_votes):
@@ -10,7 +11,7 @@ def _url(api_key, page, min_votes):
     return url
 
 
-def get_series_data(api_key, page=1, min_votes=300):
+def get_series_data(api_key, page=1, min_votes=0):
     total_pages = np.inf
     all_data = []
     while page <= total_pages:
@@ -22,6 +23,8 @@ def get_series_data(api_key, page=1, min_votes=300):
         page += 1
 
     df = pd.DataFrame(all_data)
+    df['access_date'] = dt.now()
+
     print('Writing: ../raw/tv_series.csv')
     df.to_csv('../raw/tv_series.csv', index=False)
 
