@@ -1,0 +1,22 @@
+{
+    "Cable": {
+        "2": "ABC",
+        "6": "NBC",
+        "16": "CBS",
+        "19": "FOX",
+        "71": "The CW"
+    },
+    "Premium": {
+        "49": "HBO",
+        "67": "Showtime",
+        "318": "Starz",
+        "359": "Cinemax"
+    },
+    "Streaming": {
+        "213": "Netflix",
+        "453": "Hulu",
+        "1024": "Amazon",
+        "1436": "YouTube Premium",
+        "2552": "Apple TV+"
+    }
+}
