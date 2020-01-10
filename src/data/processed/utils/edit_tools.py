@@ -14,7 +14,7 @@ def get_dictionary(fp):
         return integer_keys(json.load(f))
 
 
-def column_edits(df, col, fp):
+def network_edits(df, col, fp):
     d = get_dictionary(fp)
     if type(list(d.values())[0]) == dict:
         for sid in d.keys():
@@ -27,7 +27,7 @@ def column_edits(df, col, fp):
     return df
 
 
-def origin_edits(df, col, fp):
+def column_edits(df, col, fp):
     d = get_dictionary(fp)
     for sid in d.keys():
         for nwk in d[sid].keys():
@@ -37,17 +37,20 @@ def origin_edits(df, col, fp):
 
 
 def edit_network_ids(df):
-    df = df[(df.network_id.notnull())]
-    df['network_id'] = [s[0] for s in df['network_id']]
-    df = column_edits(df, col='network_id', fp='json/network_edits_01.json')
-    df = column_edits(df, col='network_id', fp='json/network_edits_02.json')
+    df = df[(df.network_id.notnull())].copy()
+    df.loc[:,['network_id']] = [s[0] for s in df['network_id']]
+    df = network_edits(df, col='network_id', fp='json/network_edits_01.json')
+    df = network_edits(df, col='network_id', fp='json/network_edits_02.json')
+
     return df
 
 
 def edit_runtimes(df):
+    df.index = range(len(df))
     df['runtime'] = [ast.literal_eval(s) for s in df['episode_run_time']]
     df['runtime'] = pd.DataFrame(df['runtime'].tolist())[0]
     df = column_edits(df, col='runtime', fp='json/runtime_edits.json')
+
     return df.drop(['episode_run_time'], axis=1)
 
 
@@ -57,5 +60,6 @@ def edit_origin_countries(df):
     df = df.merge(pd.DataFrame(df['origin'].tolist()), left_index=True, right_index=True, how='left')
     df['n_origin'] = 5 - pd.DataFrame(df['origin'].tolist()).isna().sum(axis=1)
     df['origin_country'] = df.loc[:,[0,1,2,3,4,'n_origin']].fillna('').apply(lambda x: '/'.join(x[0:x['n_origin']]), axis=1)
-    df = origin_edits(df, col='origin_country', fp='json/origin_country_edits.json')
+    df = column_edits(df, col='origin_country', fp='json/origin_country_edits.json')
+
     return df

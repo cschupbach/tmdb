@@ -1,10 +1,10 @@
 import pandas as pd
-# import numpy as np
-from datetime import datetime as dt
 import ast
+from datetime import datetime as dt
 from utils import parse
 from utils import edit_tools as tools
 from utils import networks
+from utils import finalize
 
 
 def process_series_data():
@@ -35,18 +35,15 @@ def process_episode_data():
     df = df.rename(columns={'vote_average':'ep_vote_average','vote_count':'ep_vote_count','show_id':'series_id'})
     df = df.merge(series_data, on='series_id', how='left')
 
-    df = df[['series_id','series_name','genre_id','genre_name','status','type',
-             'origin_country','original_language','content_rating','popularity',
-             'vote_average','vote_count','network_id','season_number','episode_number',
-             'air_year','air_date','episode_run_time','ep_vote_average','ep_vote_count']]
-
     df = tools.edit_network_ids(df)
     df = tools.edit_runtimes(df)
     df = tools.edit_origin_countries(df)
 
     network_ids = [int(nwk) for nwk in networks.get_network_ids()]
-    df = df[(df.runtime.notnull())&(df.network_id.isin(network_ids))].loc[:,:'runtime']
+    df = df[(df.runtime.notnull())&(df.network_id.isin(network_ids))]
     df.index = range(len(df))
+
+    df = finalize.finalize(df)
 
     print('Writing: ../../../data/processed/data.csv')
     df.to_csv('../../../data/processed/data.csv', index=False)
