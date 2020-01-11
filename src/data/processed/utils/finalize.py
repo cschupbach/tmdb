@@ -19,6 +19,7 @@ def network_map(fp='json/networks.json'):
 
 def restructure_columns(df):
     df = df.rename(columns={
+        'first_air_date':'release',
         'season_number':'season',
         'episode_number':'episode',
         'vote_count':'votes',
@@ -34,6 +35,9 @@ def restructure_columns(df):
             'network_type',
             'genre_id',
             'genre_name',
+            'release',
+            'last_air_date',
+            'in_production',
             'status',
             'type',
             'origin_country',

@@ -63,3 +63,14 @@ def edit_origin_countries(df):
     df = column_edits(df, col='origin_country', fp='json/origin_country_edits.json')
 
     return df
+
+
+def edit_first_air_dates(df):
+    d = {651:'1968-09-24', 91449:'2007-07-05', 6623:'1994-01-05', 65722:'2016-02-25'}
+    for sid in d.keys():
+        df.loc[(df.series_id==sid), ['first_air_date']] = d[sid]
+
+    df = df[df.first_air_date.notnull()].copy()
+    df.index = range(len(df))
+
+    return df
