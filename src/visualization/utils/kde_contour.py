@@ -122,11 +122,11 @@ def compare_kde_contours(ax, X, years, features, labels, log):
     return None
 
 
-def contour_plots(years, labels, cols, log):
+def contour_plots(years, labels, cols, log, save_fig):
     df = get_data(cols=cols, log=log)
     fig = plt.figure(figsize=(15,15))
     ax = [plt.subplot(int(np.ceil(len(years)/2)),2,i+1) for i in range(len(years))]
-    fig.suptitle('KDE contour plots comparing the number of votes and rating\n' +\
+    fig.suptitle('KDE contour plots comparing the number of votes and {}\n'.format(cols[0]) +\
         'of {} and {} TV shows throughout the 2010s'.format(labels[0], labels[1]), size=16)
     X0 = df[cols].to_numpy()
     for i in range(len(years)):
@@ -135,10 +135,11 @@ def contour_plots(years, labels, cols, log):
         X = [X0,X1,X2]
         compare_kde_contours(ax[i], X, years[i], cols, labels, log)
 
-    fig.savefig('../../figures/kde_contour_{}.png'.format(png_number()))
+    if save_fig == True:
+        fig.savefig('../../figures/kde_contour_{}.png'.format(png_number()))
 
     return None
 
-
-if __name__ == '__main__':
-    contour_plots(years, labels, cols, log)
+#
+# if __name__ == '__main__':
+#     contour_plots(years, labels, cols, log)
