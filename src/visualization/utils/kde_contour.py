@@ -26,7 +26,7 @@ def get_extent(X):
     return xmin, xmax, ymin, ymax
 
 
-def create_meshgrid(X, gridsize=200j):
+def create_meshgrid(X, gridsize=500j):
     xmin, xmax, ymin, ymax = get_extent(X)
     extent = [xmin, xmax, ymin, ymax]
     xx, yy = np.mgrid[xmin:xmax:gridsize, ymin:ymax:gridsize]
@@ -45,7 +45,10 @@ def format_axes(ax, extent, features, years, log):
         ax.set_ylabel('log({})'.format(features[1]), size=12)
     else:
         ax.set_ylabel(features[1], size=12)
-    ax.set_title('{} - {}'.format(years[0], years[-1]), size=13)
+    if len(years) > 1:
+        ax.set_title('{} - {}'.format(years[0], years[-1]), size=13)
+    else:
+        ax.set_title('{}'.format(years[0]), size=13)
 
     return ax
 
@@ -85,10 +88,22 @@ def KDE_stats(Z, xx, yy, X, years, log):
     return kstats
 
 
-def plot_text(ax, i, extent, label, features, c, kstats):
+def fig_title(fig, cols, labels, compare):
+    if compare == True:
+        fig.suptitle('KDE contour plots comparing the number of votes and {}\n'.format(cols[0]) +\
+            'of {} and {} TV shows throughout the 2010s'.format(labels[0], labels[1]), size=16)
+    else:
+        fig.suptitle('KDE contour plots comparing the number of votes and {}\n'.format(cols[0]) +\
+            'of TV shows throughout the 2010s', size=16)
+
+    return None
+
+
+def plot_text(ax, i, extent, label, features, c, kstats, compare):
     xloc = extent[0] + 0.5
     yloc = [extent[3]-0.7, extent[3]-2.2]
-    ax.text(xloc, yloc[i], label, size=12, bbox=dict(facecolor=c, alpha=0.3))
+    if compare == True:
+        ax.text(xloc, yloc[i], label, size=12, bbox=dict(facecolor=c, alpha=0.3))
     ax.text(xloc, yloc[i]-0.4, 'N (per year): {:.1f}'.format(kstats[0]), size=10)
     ax.text(xloc, yloc[i]-0.7, 'KDE {}: {:.1f}'.format(features[0], kstats[1]), size=10)
     ax.text(xloc, yloc[i]-1.0, 'KDE {}: {:.1f}'.format(features[1], kstats[2]), size=10)
@@ -104,38 +119,58 @@ def png_number():
         return name
 
 
-def compare_kde_contours(ax, X, years, features, labels, log):
+def compare_kde_contours(df, ax, X, years, features, labels, log, compare):
     sns.set_style('white')
 
-    xx, yy, positions, extent = create_meshgrid(X[0], gridsize=200j)
+    X0 = df[features].to_numpy()
+    xx, yy, positions, extent = create_meshgrid(X0, gridsize=200j)
     cmap, c, alpha = plot_params()
 
+    if compare == True:
+        X = X[1:]
+    else:
+        X = X[:1]
     ax = format_axes(ax, extent, features, years, log)
-    for i in range(2):
-        Z = kernelize(X[i+1], xx, positions)
-        kstats = KDE_stats(Z, xx, yy, X[i+1], years, log)
-        ax = plot_text(ax, i, extent, labels[i], features, c[i], kstats)
+    kstats_dict = {}
+    for i in range(len(X)):
+        Z = kernelize(X[i], xx, positions)
+        kstats = KDE_stats(Z, xx, yy, X[i], years, log)
+        kstats_dict.update({np.mean(years):kstats})
+        ax = plot_text(ax, i, extent, labels[i], features, c[i], kstats, compare)
         ax.imshow(np.rot90(Z), cmap=cmap[i], extent=extent, alpha=alpha[i])
         ax.contour(xx, yy, Z, colors=c[i], levels=10, linewidths=0.5, alpha=0.7)
-        ax.scatter(X[i+1][:,0], X[i+1][:,1], c=c[i], s=5, alpha=alpha[i]/5)
+        ax.scatter(X[i][:,0], X[i][:,1], c=c[i], s=5, alpha=alpha[i]/5)
 
-    return None
+    return kstats_dict
 
 
-def contour_plots(years, labels, cols, log, save_fig):
+def figure_layout(years):
+    if len(years) == 1:
+        ncols = 1
+    else:
+        ncols = 2
+    nrows = np.ceil(len(years)/ncols)
+    width = ncols*8
+    height = np.ceil(((nrows-1)*6)+7.5)
+
+    return ncols, nrows, width, height
+
+
+def contour_plots(years, labels, cols, log, save_fig, compare):
     df = get_data(cols=cols, log=log)
-    fig = plt.figure(figsize=(15,15))
-    ax = [plt.subplot(int(np.ceil(len(years)/2)),2,i+1) for i in range(len(years))]
-    fig.suptitle('KDE contour plots comparing the number of votes and {}\n'.format(cols[0]) +\
-        'of {} and {} TV shows throughout the 2010s'.format(labels[0], labels[1]), size=16)
-    X0 = df[cols].to_numpy()
+    ncols, nrows, width, height = figure_layout(years)
+    fig = plt.figure(figsize=(width, height))
+    ax = [plt.subplot(nrows, ncols, i+1) for i in range(len(years))]
+    fig_title(fig, cols, labels, compare)
+    kstats_dict = {}
     for i in range(len(years)):
+        X0 = df[(df.release_year.isin(years[i]))][cols].to_numpy()
         X1 = df[(df.network_type==labels[0])&(df.release_year.isin(years[i]))][cols].to_numpy()
         X2 = df[(df.network_type==labels[1])&(df.release_year.isin(years[i]))][cols].to_numpy()
         X = [X0,X1,X2]
-        compare_kde_contours(ax[i], X, years[i], cols, labels, log)
+        kstats_dict.update(compare_kde_contours(df, ax[i], X, years[i], cols, labels, log, compare))
 
     if save_fig == True:
         fig.savefig('../../figures/kde_contour_{}.png'.format(png_number()))
 
-    return None
+    return kstats_dict
