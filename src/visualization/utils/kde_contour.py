@@ -139,7 +139,3 @@ def contour_plots(years, labels, cols, log, save_fig):
         fig.savefig('../../figures/kde_contour_{}.png'.format(png_number()))
 
     return None
-
-#
-# if __name__ == '__main__':
-#     contour_plots(years, labels, cols, log)

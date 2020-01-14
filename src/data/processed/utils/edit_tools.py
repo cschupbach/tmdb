@@ -65,12 +65,28 @@ def edit_origin_countries(df):
     return df
 
 
+
 def edit_first_air_dates(df):
     d = {651:'1968-09-24', 91449:'2007-07-05', 6623:'1994-01-05', 65722:'2016-02-25'}
     for sid in d.keys():
         df.loc[(df.series_id==sid), ['first_air_date']] = d[sid]
 
     df = df[df.first_air_date.notnull()].copy()
+    df.index = range(len(df))
+
+    return df
+
+
+def edit_genre_ids_names(df):
+    df = network_edits(df, col='genre_name', fp='json/genre_name_edits.json')
+    df = network_edits(df, col='genre_id', fp='json/genre_id_edits.json')
+    df['genre_id'] = [str(s) for s in df['genre_id']]
+
+    # Remove shows with missing genre or only genre is "News"
+    df = df[~(df.genre_id.isin(['[]','[10763]']))].copy()
+    # Remove talk shows
+    df = df[df.type!='Talk Show'].copy()
+
     df.index = range(len(df))
 
     return df

@@ -30,7 +30,6 @@ def process_episode_data():
     data = pd.read_csv('../../../data/raw/episodes.csv')
 
     df = pd.concat([pd.DataFrame(ast.literal_eval(d)) for d in data['episodes']], sort=False)
-    # df['air_date'] = pd.to_datetime(df['air_date'])
     df['air_year'] = pd.to_datetime(df['air_date']).dt.year
     df = df[(df.air_year>=2010)&(df.air_year<=2019)]
     df = df.rename(columns={'vote_average':'ep_vote_average','vote_count':'ep_vote_count','show_id':'series_id'})
@@ -40,6 +39,7 @@ def process_episode_data():
     df = tools.edit_runtimes(df)
     df = tools.edit_origin_countries(df)
     df = tools.edit_first_air_dates(df)
+    df = tools.edit_genre_ids_names(df)
 
     network_ids = [int(nwk) for nwk in networks.get_network_ids()]
     df = df[(df.runtime.notnull())&(df.network_id.isin(network_ids))]

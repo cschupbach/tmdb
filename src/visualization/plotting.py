@@ -6,8 +6,8 @@ importlib.reload(kd)
 def init_kde():
     years = [[2010,2011,2012],[2013,2014,2015],[2016,2017],[2018,2019]]
     labels = ['Cable','Streaming']
-    cols = ['popularity','votes']
-    log = [True, True]
+    cols = ['rating','votes']
+    log = [False, True]
 
     return years, labels, cols, log
 
