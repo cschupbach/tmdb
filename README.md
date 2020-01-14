@@ -6,4 +6,12 @@
 Gain insight into the current state of major cable, premium, and streaming networks and contemplate potential future scenarios as we move into the 2020s.
 
 
-to be continued ...
+![](/figures/kde_contour_01.png)
+
+![](/figures/kde_contour_02.png)
+
+![](/figures/kde_contour_03.png)
+
+![](/figures/kde_contour_04.png)
+
+![](/figures/kde_contour_05.png)
