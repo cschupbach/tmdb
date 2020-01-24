@@ -122,8 +122,8 @@ def loocv_gaus_kernel_regression(x, y, lambdas):
         for i in range(n):
             x_ = np.delete(x,i)
             y_ = np.delete(y,i)
-            z = gaussian_kernel((x[i]-x_)/Lambda)
+            z = gaussian_kernel((x[i] - x_) / Lambda)
             yke = np.sum(z*y_)/np.sum(z)
             err[i] = y[i]-yke
-        mse[j] = np.mean(np.power(err,2))
+        mse[j] = np.mean(np.power(err, 2))
     return mse
