@@ -127,3 +127,6 @@ def loocv_gaus_kernel_regression(x, y, lambdas):
             err[i] = y[i]-yke
         mse[j] = np.mean(np.power(err, 2))
     return mse
+
+
+# additional splines if needed
